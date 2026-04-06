@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>图片转PDF</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>图片转PDF</h1>
+            <p class="subtitle">上传图片，拖拽排序，一键生成PDF</p>
+        </header>
+
+        <main>
+            <!-- 上传区域 -->
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" multiple accept="image/*" hidden>
+                    <div class="upload-hint">
+                        <svg viewBox="0 0 24 24" width="48" height="48">
+                            <path fill="currentColor" d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                        </svg>
+                        <p>点击或拖拽上传图片</p>
+                        <p class="small">支持 JPG, PNG, BMP, GIF, WebP</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图片列表 -->
+            <div class="images-section" id="imagesSection" style="display: none;">
+                <div class="section-header">
+                    <h2>图片列表</h2>
+                    <div class="actions">
+                        <button id="clearBtn" class="btn btn-secondary">清空</button>
+                        <button id="generateBtn" class="btn btn-primary">生成PDF</button>
+                    </div>
+                </div>
+                <p class="sort-hint">拖拽图片调整顺序</p>
+                <div class="image-grid" id="imageGrid"></div>
+            </div>
+
+            <!-- 加载提示 -->
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>正在处理...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

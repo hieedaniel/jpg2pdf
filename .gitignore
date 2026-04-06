@@ -1,0 +1,32 @@
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# Virtual environments
+.env
+.venv
+venv
+ENV
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads and PDFs (临时文件)
+static/uploads/*
+static/pdfs/*
+!static/uploads/.gitkeep
+!static/pdfs/.gitkeep
