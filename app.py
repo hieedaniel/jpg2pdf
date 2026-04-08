@@ -38,7 +38,7 @@ FILE_SIGNATURES = {
 }
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB最大上传
 MAX_FILES_PER_SESSION = 100            # 每个会话最大文件数
-THUMBNAIL_SIZE = (200, 200)            # 缩略图尺寸
+THUMBNAIL_SIZE = (120, 120)            # 缩略图尺寸（移动端优化）
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PDF_FOLDER'] = PDF_FOLDER
@@ -127,7 +127,7 @@ def validate_image_file(file_path):
 
 def create_thumbnail(source_path, thumbnail_path, size=THUMBNAIL_SIZE):
     """
-    创建缩略图
+    创建缩略图（移动端优化）
     使用高质量缩放，保持宽高比
     """
     try:
@@ -143,9 +143,10 @@ def create_thumbnail(source_path, thumbnail_path, size=THUMBNAIL_SIZE):
             elif img.mode != 'RGB':
                 img = img.convert('RGB')
 
-            # 创建高质量缩略图
-            img.thumbnail(size, Image.Resampling.LANCZOS)
-            img.save(thumbnail_path, 'JPEG', quality=85, optimize=True)
+            # 创建缩略图（使用 BILINEAR 快速缩放）
+            img.thumbnail(size, Image.Resampling.BILINEAR)
+            # 保存为渐进式JPEG，低质量优化移动端加载
+            img.save(thumbnail_path, 'JPEG', quality=60, optimize=True, progressive=True)
             return True
     except Exception:
         return False
