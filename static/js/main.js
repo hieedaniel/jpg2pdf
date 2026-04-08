@@ -20,6 +20,7 @@ const modalInfo = document.getElementById('modalInfo');
 const modalClose = document.getElementById('modalClose');
 const modalPrev = document.getElementById('modalPrev');
 const modalNext = document.getElementById('modalNext');
+const modalAddBtn = document.getElementById('modalAddBtn');
 const addMoreBtn = document.getElementById('addMoreBtn');
 const imageCount = document.getElementById('imageCount');
 
@@ -34,6 +35,14 @@ function init() {
     // 添加更多按钮
     if (addMoreBtn) {
         addMoreBtn.addEventListener('click', () => fileInput.click());
+    }
+
+    // 模态框中的添加按钮
+    if (modalAddBtn) {
+        modalAddBtn.addEventListener('click', () => {
+            closeModal();
+            fileInput.click();
+        });
     }
 
     // 拖拽上传
@@ -151,12 +160,32 @@ function renderImages() {
         item.dataset.id = file.id;
 
         // 使用缩略图预览
-        item.innerHTML = `
-            <img src="${file.thumbnail}" alt="${file.filename}" loading="lazy">
-            <button class="delete-btn" onclick="event.stopPropagation(); deleteImage('${file.id}')">×</button>
-            <span class="order-number">${index + 1}</span>
-        `;
+        const img = document.createElement('img');
+        img.src = file.thumbnail;
+        img.alt = file.filename;
+        img.loading = 'lazy';
 
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = '×';
+        // 使用 touchend 和 click 双重事件支持移动端
+        deleteBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            deleteImage(file.id);
+        });
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteImage(file.id);
+        });
+
+        const orderSpan = document.createElement('span');
+        orderSpan.className = 'order-number';
+        orderSpan.textContent = index + 1;
+
+        item.appendChild(img);
+        item.appendChild(deleteBtn);
+        item.appendChild(orderSpan);
         imageGrid.appendChild(item);
     });
 
