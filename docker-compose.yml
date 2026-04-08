@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  jpg2pdf:
+    image: ghcr.io/hieedaniel/jpg2pdf:latest
+    container_name: jpg2pdf
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - uploads:/app/static/uploads
+      - pdfs:/app/static/pdfs
+
+volumes:
+  uploads:
+  pdfs:

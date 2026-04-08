@@ -37,7 +37,7 @@
                         <button id="generateBtn" class="btn btn-primary">生成PDF</button>
                     </div>
                 </div>
-                <p class="sort-hint">拖拽图片调整顺序</p>
+                <p class="sort-hint">拖拽图片调整顺序，点击缩略图查看大图</p>
                 <div class="image-grid" id="imageGrid"></div>
             </div>
 
@@ -47,6 +47,17 @@
                 <p>正在处理...</p>
             </div>
         </main>
+    </div>
+
+    <!-- 图片预览模态框 -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="预览图片">
+            <div class="modal-info" id="modalInfo"></div>
+        </div>
+        <button class="modal-close" id="modalClose">×</button>
+        <button class="modal-prev" id="modalPrev">‹</button>
+        <button class="modal-next" id="modalNext">›</button>
     </div>
 
     <!-- SortableJS -->

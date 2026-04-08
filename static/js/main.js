@@ -3,6 +3,7 @@
 let sessionId = null;
 let uploadedFiles = [];
 let sortable = null;
+let currentModalIndex = -1;
 
 // DOM元素
 const uploadArea = document.getElementById('uploadArea');
@@ -12,6 +13,12 @@ const imageGrid = document.getElementById('imageGrid');
 const clearBtn = document.getElementById('clearBtn');
 const generateBtn = document.getElementById('generateBtn');
 const loading = document.getElementById('loading');
+const imageModal = document.getElementById('imageModal');
+const modalImage = document.getElementById('modalImage');
+const modalInfo = document.getElementById('modalInfo');
+const modalClose = document.getElementById('modalClose');
+const modalPrev = document.getElementById('modalPrev');
+const modalNext = document.getElementById('modalNext');
 
 // 初始化
 function init() {
@@ -52,6 +59,22 @@ function init() {
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         onEnd: updateOrderNumbers
+    });
+
+    // 模态框事件
+    modalClose.addEventListener('click', closeModal);
+    imageModal.addEventListener('click', (e) => {
+        if (e.target === imageModal) closeModal();
+    });
+    modalPrev.addEventListener('click', showPrevImage);
+    modalNext.addEventListener('click', showNextImage);
+
+    // 键盘事件
+    document.addEventListener('keydown', (e) => {
+        if (!imageModal.classList.contains('active')) return;
+        if (e.key === 'Escape') closeModal();
+        if (e.key === 'ArrowLeft') showPrevImage();
+        if (e.key === 'ArrowRight') showNextImage();
     });
 }
 
@@ -107,13 +130,23 @@ function renderImages() {
         item.className = 'image-item';
         item.dataset.id = file.id;
 
+        // 使用缩略图预览
         item.innerHTML = `
-            <img src="${file.path}" alt="${file.filename}">
-            <button class="delete-btn" onclick="deleteImage('${file.id}')">×</button>
+            <img src="${file.thumbnail}" alt="${file.filename}" loading="lazy">
+            <button class="delete-btn" onclick="event.stopPropagation(); deleteImage('${file.id}')">×</button>
             <span class="order-number">${index + 1}</span>
         `;
 
         imageGrid.appendChild(item);
+    });
+
+    // 绑定点击事件（使用事件委托）
+    imageGrid.querySelectorAll('.image-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('delete-btn')) {
+                openModalByElement(item);
+            }
+        });
     });
 
     updateOrderNumbers();
@@ -139,6 +172,14 @@ function updateOrderNumbers() {
         }
     });
     uploadedFiles = newOrder;
+}
+
+// 获取当前 DOM 顺序的文件列表
+function getOrderedFiles() {
+    const items = Array.from(imageGrid.querySelectorAll('.image-item'));
+    return items.map(item => {
+        return uploadedFiles.find(f => f.id === item.dataset.id);
+    }).filter(f => f);
 }
 
 // 删除单个图片
@@ -248,6 +289,69 @@ function showLoading(show) {
     loading.style.display = show ? 'block' : 'none';
     generateBtn.disabled = show;
     clearBtn.disabled = show;
+}
+
+// 模态框功能
+function openModalByElement(clickedItem) {
+    const items = Array.from(imageGrid.querySelectorAll('.image-item'));
+    const orderedFiles = getOrderedFiles();
+
+    // 找到被点击元素在当前 DOM 中的索引
+    currentModalIndex = items.indexOf(clickedItem);
+    const file = orderedFiles[currentModalIndex];
+
+    if (!file) return;
+
+    modalImage.src = file.path;
+    modalInfo.textContent = `${file.filename} (${file.width} × ${file.height})`;
+    imageModal.classList.add('active');
+
+    // 更新导航按钮状态
+    updateModalNavButtons(orderedFiles.length);
+}
+
+function closeModal() {
+    imageModal.classList.remove('active');
+    currentModalIndex = -1;
+}
+
+function showPrevImage() {
+    const orderedFiles = getOrderedFiles();
+    const total = orderedFiles.length;
+
+    if (total <= 1) return;
+
+    if (currentModalIndex > 0) {
+        currentModalIndex--;
+    } else {
+        currentModalIndex = total - 1; // 循环到最后一张
+    }
+
+    const file = orderedFiles[currentModalIndex];
+    modalImage.src = file.path;
+    modalInfo.textContent = `${file.filename} (${file.width} × ${file.height})`;
+}
+
+function showNextImage() {
+    const orderedFiles = getOrderedFiles();
+    const total = orderedFiles.length;
+
+    if (total <= 1) return;
+
+    if (currentModalIndex < total - 1) {
+        currentModalIndex++;
+    } else {
+        currentModalIndex = 0; // 循环到第一张
+    }
+
+    const file = orderedFiles[currentModalIndex];
+    modalImage.src = file.path;
+    modalInfo.textContent = `${file.filename} (${file.width} × ${file.height})`;
+}
+
+function updateModalNavButtons(total) {
+    modalPrev.style.display = total > 1 ? 'flex' : 'none';
+    modalNext.style.display = total > 1 ? 'flex' : 'none';
 }
 
 // 启动
