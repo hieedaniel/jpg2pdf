@@ -158,20 +158,16 @@ def prepare_images_for_pdf(image_paths, output_folder):
     以第一张图片的宽度为标准，其他图片适配
     返回处理后的图片路径列表
     """
-    # 获取所有图片尺寸
-    image_sizes = {}
-    target_width = None
+    if not image_paths:
+        return image_paths
 
-    for path in image_paths:
-        try:
-            with Image.open(path) as img:
-                width, height = img.size
-                image_sizes[path] = (width, height)
-                # 第一张图片的宽度作为标准
-                if target_width is None:
-                    target_width = width
-        except Exception:
-            continue
+    # 获取第一张图片的宽度作为标准
+    target_width = None
+    try:
+        with Image.open(image_paths[0]) as img:
+            target_width = img.size[0]
+    except Exception:
+        return image_paths
 
     if not target_width:
         return image_paths
@@ -183,24 +179,10 @@ def prepare_images_for_pdf(image_paths, output_folder):
     processed_paths = []
 
     for path in image_paths:
-        original_size = image_sizes.get(path)
-        if not original_size:
-            processed_paths.append(path)
-            continue
-
-        orig_width, orig_height = original_size
-
-        # 如果图片宽度已经等于目标宽度，直接使用原图
-        if orig_width == target_width:
-            processed_paths.append(path)
-            continue
-
-        # 计算缩放后的尺寸，保持宽高比
-        scale_ratio = target_width / orig_width
-        new_height = int(orig_height * scale_ratio)
-
         try:
             with Image.open(path) as img:
+                orig_width, orig_height = img.size
+
                 # 转换为 RGB 模式
                 if img.mode in ('RGBA', 'LA', 'P'):
                     background = Image.new('RGB', img.size, (255, 255, 255))
@@ -211,6 +193,10 @@ def prepare_images_for_pdf(image_paths, output_folder):
                 elif img.mode != 'RGB':
                     img = img.convert('RGB')
 
+                # 计算缩放后的尺寸，保持宽高比（统一处理所有图片）
+                scale_ratio = target_width / orig_width
+                new_height = int(orig_height * scale_ratio)
+
                 # 高质量缩放
                 resized = img.resize((target_width, new_height), Image.Resampling.LANCZOS)
 
@@ -219,7 +205,8 @@ def prepare_images_for_pdf(image_paths, output_folder):
                 processed_path = os.path.join(output_folder, processed_name)
                 resized.save(processed_path, 'JPEG', quality=95, optimize=True)
                 processed_paths.append(processed_path)
-        except Exception:
+        except Exception as e:
+            # 如果处理失败，尝试直接使用原图
             processed_paths.append(path)
 
     return processed_paths
