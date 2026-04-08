@@ -23,7 +23,7 @@
                             <path fill="currentColor" d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
                         </svg>
                         <p>点击或拖拽上传图片</p>
-                        <p class="small">支持 JPG, PNG, BMP, GIF, WebP</p>
+                        <p class="small">支持 JPG, PNG, BMP, GIF, WebP（最多50张）</p>
                     </div>
                 </div>
             </div>
@@ -31,8 +31,14 @@
             <!-- 图片列表 -->
             <div class="images-section" id="imagesSection" style="display: none;">
                 <div class="section-header">
-                    <h2>图片列表</h2>
+                    <h2>图片列表 <span id="imageCount" class="count-badge"></span></h2>
                     <div class="actions">
+                        <button id="addMoreBtn" class="btn btn-add" style="display: none;">
+                            <svg viewBox="0 0 24 24" width="16" height="16">
+                                <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                            添加图片
+                        </button>
                         <button id="clearBtn" class="btn btn-secondary">清空</button>
                         <button id="generateBtn" class="btn btn-primary">生成PDF</button>
                     </div>

@@ -4,6 +4,7 @@ let sessionId = null;
 let uploadedFiles = [];
 let sortable = null;
 let currentModalIndex = -1;
+const MAX_FILES = 50; // 最大文件数
 
 // DOM元素
 const uploadArea = document.getElementById('uploadArea');
@@ -19,6 +20,8 @@ const modalInfo = document.getElementById('modalInfo');
 const modalClose = document.getElementById('modalClose');
 const modalPrev = document.getElementById('modalPrev');
 const modalNext = document.getElementById('modalNext');
+const addMoreBtn = document.getElementById('addMoreBtn');
+const imageCount = document.getElementById('imageCount');
 
 // 初始化
 function init() {
@@ -27,6 +30,11 @@ function init() {
 
     // 文件选择
     fileInput.addEventListener('change', handleFileSelect);
+
+    // 添加更多按钮
+    if (addMoreBtn) {
+        addMoreBtn.addEventListener('click', () => fileInput.click());
+    }
 
     // 拖拽上传
     uploadArea.addEventListener('dragover', (e) => {
@@ -89,6 +97,13 @@ function handleFileSelect(e) {
 
 // 上传文件
 async function uploadFiles(files) {
+    // 检查总数限制
+    const totalFiles = uploadedFiles.length + files.length;
+    if (totalFiles > MAX_FILES) {
+        alert(`最多只能上传${MAX_FILES}张图片，当前已上传${uploadedFiles.length}张`);
+        return;
+    }
+
     showLoading(true);
 
     const formData = new FormData();
@@ -108,9 +123,14 @@ async function uploadFiles(files) {
 
         if (result.success) {
             sessionId = result.session_id;
-            uploadedFiles = result.files;
+            // 追加新文件到现有列表，而不是替换
+            uploadedFiles = [...uploadedFiles, ...result.files];
             renderImages();
             imagesSection.style.display = 'block';
+            updateImageCount();
+            // 隐藏上传区域，显示添加按钮
+            uploadArea.style.display = 'none';
+            if (addMoreBtn) addMoreBtn.style.display = 'inline-flex';
         } else {
             alert('上传失败: ' + result.error);
         }
@@ -201,9 +221,12 @@ async function deleteImage(fileId) {
         if (result.success) {
             uploadedFiles = uploadedFiles.filter(f => f.id !== fileId);
             renderImages();
+            updateImageCount();
 
             if (uploadedFiles.length === 0) {
                 imagesSection.style.display = 'none';
+                uploadArea.style.display = 'block';
+                if (addMoreBtn) addMoreBtn.style.display = 'none';
             }
         } else {
             alert('删除失败: ' + result.error);
@@ -234,13 +257,23 @@ async function clearAll() {
 
         if (result.success) {
             uploadedFiles = [];
+            sessionId = null;
             imageGrid.innerHTML = '';
             imagesSection.style.display = 'none';
+            uploadArea.style.display = 'block';
+            if (addMoreBtn) addMoreBtn.style.display = 'none';
         } else {
             alert('清空失败: ' + result.error);
         }
     } catch (error) {
         alert('清空失败: ' + error.message);
+    }
+}
+
+// 更新图片数量显示
+function updateImageCount() {
+    if (imageCount) {
+        imageCount.textContent = `${uploadedFiles.length}/${MAX_FILES}`;
     }
 }
 
