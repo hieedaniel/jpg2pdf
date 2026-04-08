@@ -37,7 +37,7 @@ FILE_SIGNATURES = {
     b'RIFF': 'webp',                   # WebP (RIFF...WEBP)
 }
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB最大上传
-MAX_FILES_PER_SESSION = 100            # 每个会话最大文件数
+MAX_FILES_PER_SESSION = 50            # 每个会话最大文件数
 THUMBNAIL_SIZE = (120, 120)            # 缩略图尺寸（移动端优化）
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -155,26 +155,30 @@ def create_thumbnail(source_path, thumbnail_path, size=THUMBNAIL_SIZE):
 def prepare_images_for_pdf(image_paths, output_folder):
     """
     准备用于PDF的图片，统一宽度对齐
+    以第一张图片的宽度为标准，其他图片适配
     返回处理后的图片路径列表
     """
-    # 获取所有图片尺寸，找到最大宽度
-    max_width = 0
+    # 获取所有图片尺寸
     image_sizes = {}
+    target_width = None
 
     for path in image_paths:
         try:
             with Image.open(path) as img:
                 width, height = img.size
                 image_sizes[path] = (width, height)
-                max_width = max(max_width, width)
+                # 第一张图片的宽度作为标准
+                if target_width is None:
+                    target_width = width
         except Exception:
             continue
 
-    # PDF 页面宽度限制（设一个合理的上限）
-    PDF_MAX_WIDTH = 1200  # 最大宽度限制，避免超大图片
+    if not target_width:
+        return image_paths
 
-    # 如果最大宽度超过限制，按比例缩小
-    target_width = min(max_width, PDF_MAX_WIDTH)
+    # PDF 页面宽度限制（设一个合理的上限）
+    PDF_MAX_WIDTH = 1200
+    target_width = min(target_width, PDF_MAX_WIDTH)
 
     processed_paths = []
 
